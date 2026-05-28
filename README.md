@@ -45,7 +45,7 @@ A web-based medical catalog system with Indonesian language support for searchin
 
 ```bash
 cd /Applications/XAMPP/xamppfiles/htdocs/
-# Extract or clone the project to catalog_loinc directory
+# Extract or clone the project to medical_catalog directory
 ```
 
 ### 2. Start XAMPP Services
@@ -105,7 +105,7 @@ Edit the configuration files to match your environment:
 
 Open your browser and navigate to:
 ```
-http://localhost/catalog_loinc/public/
+http://localhost/medical_catalog/public/
 ```
 
 ## Project Structure

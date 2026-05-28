@@ -16,13 +16,13 @@ A web-based medical catalog system with Indonesian language support for searchin
 
 <div align="center">
 
-| Home Page | Search Page |
+| Home Page LOINC | Home Page SNOMED |
 |-----------|-------------|
-| ![Home Page](screenshoot/screenshoot_1.png) | ![Search Page](screenshoot/screenshoot_2.png) |
+| ![Home Page LOINC](screenshoot/screenshoot_1.png) | ![Home Page SNOMED](screenshoot/screenshoot_2.png) |
 
-| Statistics Page | LOINC Module |
+| Search Page SNOMED | Search Page LOINC |
 |-----------------|----------------|
-| ![Statistics Page](screenshoot/screenshoot_4.png) | ![LOINC Module](screenshoot/screenshoot_3.png) |
+| ![Search Page SNOMED](screenshoot/screenshoot_4.png) | ![Search Page LOINC](screenshoot/screenshoot_3.png) |
 
 </div>
 

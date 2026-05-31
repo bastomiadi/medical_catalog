@@ -8,7 +8,6 @@ A web-based medical catalog system with Indonesian language support for searchin
 - **SNOMED-CT Catalog**: Search and browse Systematized Nomenclature of Medicine Clinical Terms (MySQL database)
 - **Indonesian Language Support**: Filter and search using Indonesian terminology with Google Translate API
 - **Responsive Design**: Modern UI with Tailwind CSS
-- **DataTables Integration**: Advanced table features with sorting, pagination, and search
 - **Enhanced Search Results**: SNOMED-CT results include Clinical Focus column
 - **Click-to-Copy**: Click any row to copy LOINC/SNOMED code to clipboard
 - **Table-style Autocomplete**: Dropdown shows results in table format with Kode, Deskripsi, and Salin columns
@@ -217,7 +216,7 @@ If you see "Unknown character set" error:
 
 - **Backend**: PHP 7.3+
 - **Database**: MySQL 5.7+ (SNOMED-CT only)
-- **Frontend**: HTML5, CSS3, JavaScript (Tailwind CSS, jQuery, DataTables)
+- **Frontend**: HTML5, CSS3, JavaScript (Tailwind CSS, jQuery)
 - **Translation**: Google Translate API
 - **API Client**: cURL for REST API calls
 

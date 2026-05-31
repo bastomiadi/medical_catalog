@@ -98,7 +98,6 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
     <title>Medical Catalog - Indonesian Language Filter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
     <script>
         tailwind.config = {
             theme: {
@@ -115,7 +114,6 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
         }
     </script>
     <style>
-        .dataTables_wrapper .dataTable th { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .autocomplete-header {
             position: sticky;
@@ -225,7 +223,6 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
         </main>
     </div>
     
-    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
     <script>
         // Copy code to clipboard
         function copyCode(code, event) {
@@ -332,26 +329,6 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                 if (keyword.trim()) {
                     window.location.href = '?q=' + encodeURIComponent(keyword);
                 }
-            }
-        });
-        
-        $(document).ready(function() {
-            const table = document.getElementById('resultsTable');
-            if (table) {
-                $('#resultsTable').DataTable({
-                    language: {
-                        search: 'Cari:',
-                        lengthMenu: 'Tampilkan _MENU_ data per halaman',
-                        info: 'Menampilkan _START_ sampai _END_ dari _TOTAL_ data',
-                        infoEmpty: 'Tidak ada data',
-                        infoFiltered: '(disaring dari _MAX_ data total)',
-                        paginate: { first: 'Pertama', last: 'Terakhir', next: 'Selanjutnya', previous: 'Sebelumnya' }
-                    },
-                    responsive: true,
-                    pageLength: 25,
-                    lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'Semua']],
-                    order: [[0, 'asc']]
-                });
             }
         });
     </script>

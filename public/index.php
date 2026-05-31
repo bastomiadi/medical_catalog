@@ -38,7 +38,7 @@
                 </p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="catalog.php?module=loinc" class="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
-                        Mulai Pencarian
+                        Mulai Pencarian LOINC
                     </a>
                     <a href="catalog.php?module=snomed" class="px-8 py-3 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors">
                         SNOMED-CT Catalog

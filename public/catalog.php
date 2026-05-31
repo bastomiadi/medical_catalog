@@ -1,52 +1,42 @@
 <?php
 /**
- * Catalog LOINC & SNOMED-CT - Web Interface
+ * Catalog LOINC & SNOMED-CT - Unified Web Interface
  * 
- * Main web interface for medical catalog with Indonesian language support.
- * LOINC module supports both REST API and MySQL database sources.
- * SNOMED-CT module uses MySQL database.
+ * Unified web interface for medical catalog with Indonesian language support.
+ * Combines LOINC and SNOMED-CT modules in a single view without sidebar/navbar.
  */
 
 // Load configuration
 $config = include __DIR__ . '/../config/modules.php';
 require_once __DIR__ . '/../modules/Translator.php';
+require_once __DIR__ . '/../modules/MedicalCatalogModule.php';
 
 // Get module parameter (default: loinc)
 $module = $_GET['module'] ?? 'loinc';
 
-// Load module-specific files based on requested module
-if ($module === 'snomed') {
-    if (!class_exists('SnomedSearch', false)) {
-        include __DIR__ . '/../modules/snomed/SnomedSearch.php';
-    }
-    if (!class_exists('SnomedModule', false)) {
-        include __DIR__ . '/../modules/snomed/SnomedModule.php';
-    }
-} else {
-    // Load LOINC files (supports both API and database modes)
-    if (!class_exists('LoincApi', false)) {
-        include __DIR__ . '/../modules/loinc/LoincApi.php';
-    }
-    if (!class_exists('LoincSearch', false)) {
-        include __DIR__ . '/../modules/loinc/LoincSearch.php';
-    }
-    if (!class_exists('LoincDbSearch', false)) {
-        include __DIR__ . '/../modules/loinc/LoincDbSearch.php';
-    }
-    if (!class_exists('LoincModule', false)) {
-        include __DIR__ . '/../modules/loinc/LoincModule.php';
-    }
+// Load module-specific files
+if (!class_exists('LoincModule', false)) {
+    include __DIR__ . '/../modules/loinc/LoincModule.php';
+}
+if (!class_exists('SnomedModule', false)) {
+    include __DIR__ . '/../modules/snomed/SnomedModule.php';
 }
 
-// Initialize module
+// Load module configs
+$loincConfig = include __DIR__ . '/../modules/loinc/config.php';
+$snomedConfig = include __DIR__ . '/../modules/snomed/config.php';
+
+// Build unified config
+$unifiedConfig = [
+    'active_module' => $module,
+    'loinc' => $loincConfig,
+    'snomed' => $snomedConfig
+];
+
+// Initialize unified module
 try {
-    if ($module === 'snomed') {
-        $moduleConfig = include __DIR__ . '/../modules/snomed/config.php';
-        $catalog = new SnomedModule($moduleConfig);
-    } else {
-        $moduleConfig = include __DIR__ . '/../modules/loinc/config.php';
-        $catalog = new LoincModule($moduleConfig);
-    }
+    $catalog = new MedicalCatalogModule($unifiedConfig);
+    $catalog->setActiveModule($module);
 } catch (Exception $e) {
     $error = $e->getMessage();
     ?>
@@ -54,7 +44,7 @@ try {
     <html lang="id">
     <head>
         <meta charset="UTF-8">
-        <title>Error - Catalog LOINC & SNOMED-CT</title>
+        <title>Error - Medical Catalog</title>
         <script src="https://cdn.tailwindcss.com"></script>
     </head>
     <body class="bg-gray-100 min-h-screen flex items-center justify-center">
@@ -96,13 +86,9 @@ if ($searchKeyword) {
     $results = $searchResults;
 }
 
-// Define colors
-$bgColor = '#ffffff';
-$bgCard = '#f8fafc';
-$textPrimary = '#0f172a';
-$textSecondary = '#64748b';
-$borderColor = '#e2e8f0';
-$accentColor = '#3b82f6';
+// Get module info for display
+$moduleInfo = $catalog->getModuleInfo();
+$currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -129,8 +115,6 @@ $accentColor = '#3b82f6';
         }
     </script>
     <style>
-        .sidebar-active { background-color: #3b82f6; color: white; }
-        .sidebar-hover:hover { background-color: #f1f5f9; }
         .dataTables_wrapper .dataTable th { font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
         .truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .autocomplete-header {
@@ -150,51 +134,32 @@ $accentColor = '#3b82f6';
     </style>
 </head>
 <body class="bg-gray-100 min-h-screen">
-    <!-- Top Navigation -->
-    <nav class="flex items-center justify-between px-6 py-3 bg-white border-b border-gray-200">
-        <a href="catalog.php?module=loinc" class="text-lg font-bold text-gray-800">
-            Medical Catalog
-        </a>
-    </nav>
-
-    <div class="flex min-h-screen">
-        <!-- Sidebar -->
-        <aside class="w-64 bg-white border-r border-gray-200">
-            <div class="p-6">
-                <nav class="space-y-1">
-                    <a href="catalog.php?module=loinc" 
-                       class="block px-4 py-3 rounded-lg text-gray-700 sidebar-hover <?= $module === 'loinc' ? 'sidebar-active' : '' ?>">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h4m5-6v-2a4 4 0 00-4-4H9a4 4 0 00-4 4v8a4 4 0 004 4h6a4 4 0 004-4v-2"></path>
-                            </svg>
-                            <span class="font-medium">LOINC</span>
-                        </div>
-                    </a>
-                    <a href="catalog.php?module=snomed" 
-                       class="block px-4 py-3 rounded-lg text-gray-700 sidebar-hover <?= $module === 'snomed' ? 'sidebar-active' : '' ?>">
-                        <div class="flex items-center gap-3">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.5 14.25v-5.5c0-1.5-1.5-3-3-3H8c-1.5 0-3 1.5-3 3v5.5c0 1.5 1.5 3 3 3h8.5c1.5 0 3-1.5 3-3z"></path>
-                            </svg>
-                            <span class="font-medium">SNOMED CT</span>
-                        </div>
-                    </a>
-                </nav>
-            </div>
-        </aside>
-        
+    <div class="flex min-h-screen flex-col">
         <!-- Main Content -->
         <main class="flex-1 p-6">
             <div class="max-w-6xl mx-auto">
                 <!-- Header -->
                 <div class="mb-8">
                     <h1 class="text-3xl font-bold mb-2 text-gray-800">
-                        <?= $module === 'snomed' ? 'SNOMED-CT Catalog' : 'LOINC Catalog' ?>
+                        <?= htmlspecialchars($currentModuleInfo['name']) ?> Catalog
                     </h1>
                     <p class="text-lg text-gray-600">
                         Sistem filter kode medis dengan dukungan bahasa Indonesia
                     </p>
+                </div>
+                
+                <!-- Module Toggle -->
+                <div class="mb-6">
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <a href="catalog.php?module=loinc<?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
+                           class="px-6 py-2 text-sm font-medium rounded-l-lg <?= $module === 'loinc' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100' ?>">
+                            LOINC
+                        </a>
+                        <a href="catalog.php?module=snomed<?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
+                           class="px-6 py-2 text-sm font-medium rounded-r-lg <?= $module === 'snomed' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100' ?>">
+                            SNOMED CT
+                        </a>
+                    </div>
                 </div>
                 
                 <!-- Search Box -->
@@ -237,7 +202,7 @@ $accentColor = '#3b82f6';
                                     $description = $row['long_common_name'] ?? $row['text'] ?? $row['description'] ?? '-';
                                     $class = $row['class'] ?? $row['CLASS'] ?? '-';
                                     ?>
-                                    <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="copyCode('<?= htmlspecialchars($code) ?>')">
+                                    <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="copyCode('<?= htmlspecialchars($code) ?>', event)">
                                         <td class="px-4 py-3 text-sm font-mono text-gray-800"><?= htmlspecialchars($code) ?></td>
                                         <td class="px-4 py-3 text-sm text-gray-800 max-w-md truncate" title="<?= htmlspecialchars($description) ?>"><?= htmlspecialchars($description) ?></td>
                                         <?php if ($module === 'loinc'): ?>
@@ -251,6 +216,10 @@ $accentColor = '#3b82f6';
                             </tbody>
                         </table>
                     </div>
+                <?php elseif ($searchKeyword): ?>
+                    <div class="bg-white rounded-xl p-6 text-center border border-gray-200">
+                        <p class="text-gray-500">Tidak ada hasil ditemukan untuk "<?= htmlspecialchars($searchKeyword) ?>"</p>
+                    </div>
                 <?php endif; ?>
             </div>
         </main>
@@ -259,10 +228,43 @@ $accentColor = '#3b82f6';
     <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
     <script>
         // Copy code to clipboard
-        function copyCode(code) {
-            navigator.clipboard.writeText(code).then(() => {
-                alert('Kode berhasil disalin: ' + code);
-            });
+        function copyCode(code, event) {
+            // Prevent event bubbling if event is provided
+            if (event) {
+                event.stopPropagation();
+            }
+            
+            // Try modern clipboard API first
+            if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard.writeText(code).then(() => {
+                    alert('Kode berhasil disalin: ' + code);
+                }).catch(err => {
+                    // Fallback to execCommand
+                    copyWithExecCommand(code);
+                });
+            } else {
+                // Fallback for non-secure contexts
+                copyWithExecCommand(code);
+            }
+        }
+        
+        // Fallback copy method using execCommand
+        function copyWithExecCommand(text) {
+            const textArea = document.createElement('textarea');
+            textArea.value = text;
+            textArea.style.position = 'fixed';
+            textArea.style.left = '-999999px';
+            textArea.style.top = '-999999px';
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                alert('Kode berhasil disalin: ' + text);
+            } catch (err) {
+                alert('Gagal menyalin: ' + err);
+            }
+            document.body.removeChild(textArea);
         }
         
         // Autocomplete functionality
@@ -303,9 +305,8 @@ $accentColor = '#3b82f6';
                                 const text = item.text || item.description || '-';
                                 tr.innerHTML = '<td class="px-4 py-2 text-sm font-mono text-gray-800">' + code + '</td><td class="px-4 py-2 text-sm text-gray-500">' + text + '</td><td class="px-4 py-2 text-right"><svg class="w-4 h-4 text-blue-600 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></td>';
                                 tr.onclick = (e) => {
-                                    if (!e.target.closest('svg')) {
-                                        copyCode(code);
-                                    }
+                                    e.stopPropagation();
+                                    copyCode(code);
                                 };
                                 tbody.appendChild(tr);
                             });
@@ -354,5 +355,13 @@ $accentColor = '#3b82f6';
             }
         });
     </script>
+    
+    <!-- Floating Home Button -->
+    <a href="index.php" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l9-9 9 9M5 10v10a1 1 0 001 1h3m10 0h3a1 1 0 001-1V10m-2-2l2 2m-8-2v10"></path>
+        </svg>
+        <span class="text-sm font-medium">Beranda</span>
+    </a>
 </body>
 </html>

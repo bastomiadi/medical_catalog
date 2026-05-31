@@ -215,7 +215,7 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                             'major_surgeries_and_implants' => 'Major Surgeries',
                             'medical_conditions' => 'Medical Conditions',
                             'ucum' => 'UCUM',
-                            'prescribable_drug_ingredients_RxTerms' => 'RxTerms'
+                            'prescribable_drug_ingredients_RxTerms' => 'Drug Ingredients from RxTerms'
                         ];
                         foreach ($modules as $modKey => $modLabel): 
                             $isActive = $module === $modKey;
@@ -414,6 +414,18 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
             }
         });
     </script>
+    
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-8">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-400 text-xs">
+                © 2024 Medical Catalog System. Untuk tujuan pendidikan dan referensi medis.
+            </p>
+            <p class="text-gray-500 text-xs mt-1">
+                Dibuat oleh <a href="https://bastomi.my.id" target="_blank" class="text-blue-400 hover:text-blue-300">bastomi.my.id</a>
+            </p>
+        </div>
+    </footer>
     
     <!-- Floating Home Button -->
     <a href="index.php" class="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-colors">

@@ -34,15 +34,38 @@
                     Medical Catalog System
                 </h1>
                 <p class="text-lg md:text-xl mb-8 opacity-90">
-                    Sistem katalog kode medis dengan dukungan bahasa Indonesia untuk pencarian dan filter kode LOINC serta SNOMED-CT
+                    Sistem katalog kode medis dengan dukungan bahasa Indonesia untuk pencarian dan filter kode medis
                 </p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="catalog.php?module=loinc" class="px-8 py-3 bg-white text-blue-600 font-semibold rounded-lg hover:bg-gray-100 transition-colors">
-                        Mulai Pencarian LOINC
-                    </a>
-                    <a href="catalog.php?module=snomed" class="px-8 py-3 bg-blue-700 text-white font-semibold rounded-lg hover:bg-blue-800 transition-colors">
-                        SNOMED-CT Catalog
-                    </a>
+                
+                <!-- Module Selector (Compact Modern Style) -->
+                <div class="mb-8">
+                    <div class="flex items-center gap-2 mb-3">
+                        <span class="text-sm font-medium text-white opacity-90">Daftar Katalog:</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-1">
+                        <?php
+                        $modules = [
+                            'loinc' => 'LOINC',
+                            'snomed' => 'SNOMED CT',
+                            'icd10' => 'ICD-10',
+                            'icd9_procedure' => 'ICD-9 Procedure',
+                            'icd9_diagnose' => 'ICD-9 Diagnoses',
+                            'icd11_codes' => 'ICD-11 Codes',
+                            'hcpcs' => 'HCPCS',
+                            'hpo' => 'HPO',
+                            'major_surgeries_and_implants' => 'Major Surgeries',
+                            'medical_conditions' => 'Medical Conditions',
+                            'ucum' => 'UCUM',
+                            'prescribable_drug_ingredients_RxTerms' => 'Drug Ingredients from RxTerms'
+                        ];
+                        foreach ($modules as $modKey => $modLabel): 
+                        ?>
+                            <a href="catalog.php?module=<?= $modKey ?>" 
+                               class="bg-white bg-opacity-10 text-white border border-white border-opacity-20 hover:bg-opacity-20 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap">
+                               <?= $modLabel ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
                 </div>
             </div>
         </div>
@@ -91,6 +114,9 @@
         <div class="container mx-auto px-4 text-center">
             <p class="text-gray-400 text-sm">
                 © 2024 Medical Catalog System. Untuk tujuan pendidikan dan referensi medis.
+            </p>
+            <p class="text-gray-500 text-xs mt-2">
+                Dibuat oleh <a href="https://bastomi.my.id" target="_blank" class="text-blue-400 hover:text-blue-300">bastomi.my.id</a>
             </p>
         </div>
     </div>

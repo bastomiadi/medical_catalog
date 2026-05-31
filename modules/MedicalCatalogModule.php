@@ -34,6 +34,12 @@ require_once __DIR__ . '/major_surgeries_and_implants/MajorSurgeriesModule.php';
 require_once __DIR__ . '/medical_conditions/MedicalConditionsApi.php';
 require_once __DIR__ . '/medical_conditions/MedicalConditionsSearch.php';
 require_once __DIR__ . '/medical_conditions/MedicalConditionsModule.php';
+require_once __DIR__ . '/ucum/UcumApi.php';
+require_once __DIR__ . '/ucum/UcumSearch.php';
+require_once __DIR__ . '/ucum/UcumModule.php';
+require_once __DIR__ . '/prescribable_drug_ingredients_RxTerms/RxTermsApi.php';
+require_once __DIR__ . '/prescribable_drug_ingredients_RxTerms/RxTermsSearch.php';
+require_once __DIR__ . '/prescribable_drug_ingredients_RxTerms/RxTermsModule.php';
 
 class MedicalCatalogModule {
     private $config;
@@ -47,6 +53,8 @@ class MedicalCatalogModule {
     private $hpoModule;
     private $majorSurgeriesModule;
     private $medicalConditionsModule;
+    private $ucumModule;
+    private $rxTermsModule;
     private $activeModule;
     
     /**
@@ -113,6 +121,14 @@ class MedicalCatalogModule {
         require_once __DIR__ . '/medical_conditions/MedicalConditionsApi.php';
         require_once __DIR__ . '/medical_conditions/MedicalConditionsSearch.php';
         $this->medicalConditionsModule = new MedicalConditionsModule($medicalConditionsConfig);
+        
+        // Initialize UCUM module
+        $ucumConfig = $config['ucum'] ?? [];
+        $this->ucumModule = new UcumModule($ucumConfig);
+        
+        // Initialize RxTerms module
+        $rxTermsConfig = $config['prescribable_drug_ingredients_RxTerms'] ?? [];
+        $this->rxTermsModule = new RxTermsModule($rxTermsConfig);
     }
     
     /**
@@ -168,6 +184,12 @@ class MedicalCatalogModule {
         if ($this->activeModule === 'medical_conditions') {
             return $this->medicalConditionsModule->searchByKeyword($keyword, $status);
         }
+        if ($this->activeModule === 'ucum') {
+            return $this->ucumModule->searchByKeyword($keyword);
+        }
+        if ($this->activeModule === 'prescribable_drug_ingredients_RxTerms') {
+            return $this->rxTermsModule->searchByKeyword($keyword);
+        }
         return $this->loincModule->searchByKeyword($keyword, $status);
     }
     
@@ -204,6 +226,12 @@ class MedicalCatalogModule {
         }
         if ($this->activeModule === 'medical_conditions') {
             return $this->medicalConditionsModule->getByCode($code);
+        }
+        if ($this->activeModule === 'ucum') {
+            return $this->ucumModule->getByCode($code);
+        }
+        if ($this->activeModule === 'prescribable_drug_ingredients_RxTerms') {
+            return $this->rxTermsModule->getByCode($code);
         }
         return $this->loincModule->getByCode($code);
     }
@@ -290,6 +318,20 @@ class MedicalCatalogModule {
                 'description' => 'Medical Conditions from Regenstrief Institute Medical Gopher program',
                 'language_support' => ['en', 'id'],
                 'data_source' => 'https://clinicaltables.nlm.nih.gov/api/conditions/v3/'
+            ],
+            'ucum' => [
+                'name' => 'UCUM',
+                'version' => '1.0.0',
+                'description' => 'The Unified Code for Units of Measure',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/ucum/v3/search'
+            ],
+            'prescribable_drug_ingredients_RxTerms' => [
+                'name' => 'Prescribable Drug Ingredients (RxTerms)',
+                'version' => '1.0.0',
+                'description' => 'Prescribable Drug Ingredients from RxTerms',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/drug_ingredients/v3/'
             ]
         ];
     }

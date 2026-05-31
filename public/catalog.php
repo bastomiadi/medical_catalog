@@ -45,6 +45,12 @@ if (!class_exists('MajorSurgeriesModule', false)) {
 if (!class_exists('MedicalConditionsModule', false)) {
     include __DIR__ . '/../modules/medical_conditions/MedicalConditionsModule.php';
 }
+if (!class_exists('UcumModule', false)) {
+    include __DIR__ . '/../modules/ucum/UcumModule.php';
+}
+if (!class_exists('RxTermsModule', false)) {
+    include __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/RxTermsModule.php';
+}
 
 // Load module configs
 $loincConfig = include __DIR__ . '/../modules/loinc/config.php';
@@ -57,6 +63,8 @@ $hcpcsConfig = include __DIR__ . '/../modules/hcpcs/config.php';
 $hpoConfig = include __DIR__ . '/../modules/hpo/config.php';
 $majorSurgeriesConfig = include __DIR__ . '/../modules/major_surgeries_and_implants/config.php';
 $medicalConditionsConfig = include __DIR__ . '/../modules/medical_conditions/config.php';
+$ucumConfig = include __DIR__ . '/../modules/ucum/config.php';
+$rxTermsConfig = include __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/config.php';
 
 // Build unified config
 $unifiedConfig = [
@@ -70,7 +78,9 @@ $unifiedConfig = [
     'hcpcs' => $hcpcsConfig,
     'hpo' => $hpoConfig,
     'major_surgeries_and_implants' => $majorSurgeriesConfig,
-    'medical_conditions' => $medicalConditionsConfig
+    'medical_conditions' => $medicalConditionsConfig,
+    'ucum' => $ucumConfig,
+    'prescribable_drug_ingredients_RxTerms' => $rxTermsConfig
 ];
 
 // Initialize unified module
@@ -213,7 +223,9 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                                     'hcpcs' => 'HCPCS',
                                     'hpo' => 'HPO',
                                     'major_surgeries_and_implants' => 'Major Surgeries',
-                                    'medical_conditions' => 'Medical Conditions'
+                                    'medical_conditions' => 'Medical Conditions',
+                                    'ucum' => 'UCUM',
+                                    'prescribable_drug_ingredients_RxTerms' => 'RxTerms'
                                 ];
                                 foreach ($modules as $modKey => $modLabel): ?>
                                     <a href="catalog.php?module=<?= $modKey ?><?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
@@ -258,8 +270,8 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                                         <?php elseif ($module === 'snomed'): ?>
                                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Value Set</th>
                                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Clinical Focus</th>
-                                        <?php elseif ($module === 'icd10' || $module === 'icd9_procedure' || $module === 'hcpcs' || $module === 'major_surgeries_and_implants' || $module === 'medical_conditions'): ?>
-                                        <!-- ICD-10, ICD-9 Procedure, HCPCS, Major Surgeries, and Medical Conditions have only 2 columns -->
+                                        <?php elseif ($module === 'icd10' || $module === 'icd9_procedure' || $module === 'hcpcs' || $module === 'major_surgeries_and_implants' || $module === 'medical_conditions' || $module === 'ucum' || $module === 'prescribable_drug_ingredients_RxTerms'): ?>
+                                        <!-- ICD-10, ICD-9 Procedure, HCPCS, Major Surgeries, Medical Conditions, UCUM, and RxTerms have only 2 columns -->
                                         <?php else: ?>
                                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Value Set</th>
                                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Clinical Focus</th>
@@ -269,8 +281,8 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                                 <tbody>
                                     <?php foreach ($results as $row): ?>
                                         <?php 
-                                        $code = $row['loinc_num'] ?? $row['code'] ?? $row['icd_code'] ?? $row['procedure_code'] ?? '-';
-                                        $description = $row['long_common_name'] ?? $row['text'] ?? $row['name'] ?? $row['long_desc'] ?? $row['description'] ?? $row['consumer_name'] ?? $row['primary_name'] ?? '-';
+                                        $code = $row['loinc_num'] ?? $row['code'] ?? $row['icd_code'] ?? $row['procedure_code'] ?? $row['cs_code'] ?? '-';
+                                        $description = $row['long_common_name'] ?? $row['name'] ?? $row['text'] ?? $row['long_desc'] ?? $row['description'] ?? $row['consumer_name'] ?? $row['primary_name'] ?? '-';
                                         $class = $row['class'] ?? $row['CLASS'] ?? '-';
                                         ?>
                                         <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="copyCode('<?= htmlspecialchars($code) ?>', event)">
@@ -395,9 +407,9 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                             data.forEach(item => {
                                 const tr = document.createElement('tr');
                                 tr.className = 'border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
-                                // Handle LOINC, SNOMED, ICD-10, HCPCS, and Major Surgeries data structures
-                                const code = item.loinc_num || item.code || item.icd_code || item.procedure_code || '-';
-                                const text = item.text || item.description || item.name || item.long_desc || item.consumer_name || item.primary_name || '-';
+                                // Handle LOINC, SNOMED, ICD-10, HCPCS, Major Surgeries, and UCUM data structures
+                                const code = item.loinc_num || item.code || item.icd_code || item.procedure_code || item.cs_code || '-';
+                                const text = item.name || item.text || item.description || item.long_desc || item.consumer_name || item.primary_name || '-';
                                 tr.innerHTML = '<td class="px-4 py-2 text-sm font-mono text-gray-800">' + code + '</td><td class="px-4 py-2 text-sm text-gray-500">' + text + '</td><td class="px-4 py-2 text-right"><svg class="w-4 h-4 text-blue-600 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></td>';
                                 tr.onclick = (e) => {
                                     e.stopPropagation();

@@ -59,6 +59,16 @@ return [
         'path' => __DIR__ . '/../modules/medical_conditions/MedicalConditionsModule.php',
         'config_path' => __DIR__ . '/../modules/medical_conditions/config.php'
     ],
+    'ucum' => [
+        'class' => 'UcumModule',
+        'path' => __DIR__ . '/../modules/ucum/UcumModule.php',
+        'config_path' => __DIR__ . '/../modules/ucum/config.php'
+    ],
+    'prescribable_drug_ingredients_RxTerms' => [
+        'class' => 'RxTermsModule',
+        'path' => __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/RxTermsModule.php',
+        'config_path' => __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/config.php'
+    ],
     
     // Application settings
     'app' => [

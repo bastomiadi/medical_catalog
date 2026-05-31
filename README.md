@@ -4,13 +4,14 @@ A web-based medical catalog system with Indonesian language support for searchin
 
 ## Features
 
-- **LOINC Catalog**: Search and browse Logical Observation Identifiers Names and Codes
-- **SNOMED-CT Catalog**: Search and browse Systematized Nomenclature of Medicine Clinical Terms
+- **LOINC Catalog**: Search and browse Logical Observation Identifiers Names and Codes (REST API or MySQL database)
+- **SNOMED-CT Catalog**: Search and browse Systematized Nomenclature of Medicine Clinical Terms (MySQL database)
 - **Indonesian Language Support**: Filter and search using Indonesian terminology with Google Translate API
 - **Responsive Design**: Modern UI with Tailwind CSS
 - **DataTables Integration**: Advanced table features with sorting, pagination, and search
-- **Dashboard Statistics**: Quick stats on home page showing record counts
 - **Enhanced Search Results**: SNOMED-CT results include Clinical Focus column
+- **Click-to-Copy**: Click any row to copy LOINC/SNOMED code to clipboard
+- **Table-style Autocomplete**: Dropdown shows results in table format with Kode, Deskripsi, and Salin columns
 
 ## Demo Screenshots
 
@@ -30,14 +31,15 @@ A web-based medical catalog system with Indonesian language support for searchin
 
 | Module | Source | Description |
 |--------|--------|-------------|
-| LOINC | [loinc.org](https://loinc.org/news/loinc-version-2-82-release-highlights/) | LOINC Version 2.82 release with clinical terms and codes |
-| SNOMED-CT | [Hugging Face Dataset](https://huggingface.co/datasets/awacke1/SNOMED-CT-Code-Value-Semantic-Set.csv) | SNOMED-CT Code Value Semantic Set for medical terminology |
+| LOINC | REST API or MySQL Database | Configurable via `use_database` setting in config |
+| SNOMED-CT | [MySQL Database](database/sql/snomed_db.sql) | SNOMED-CT database schema with local MySQL storage |
 
 ## Requirements
 
 - PHP 7.3+ (XAMPP recommended)
-- MySQL 5.7+
+- MySQL 5.7+ (for SNOMED-CT only)
 - Apache HTTP Server
+- Internet connection (for LOINC API access)
 
 ## Installation
 
@@ -52,42 +54,27 @@ cd /Applications/XAMPP/xamppfiles/htdocs/
 
 Start Apache and MySQL services from XAMPP Control Panel.
 
-### 3. Create Databases
+### 3. Create Database (SNOMED-CT only)
 
 ```sql
-CREATE DATABASE IF NOT EXISTS loinc_db;
 CREATE DATABASE IF NOT EXISTS snomed_db;
 ```
 
-### 4. Import Database Schema
+### 4. Import SNOMED-CT Database Schema
 
-The database SQL files are located in the `database/sql/` directory:
-- `database/sql/loinc_db.sql` - LOINC database schema
+The database SQL file is located in the `database/sql/` directory:
 - `database/sql/snomed_db.sql` - SNOMED-CT database schema
 
 ```bash
-# Import LOINC schema
-mysql -u root -p loinc_db < database/sql/loinc_db.sql
-
 # Import SNOMED-CT schema
 mysql -u root -p snomed_db < database/sql/snomed_db.sql
 ```
 
-### 5. Configure Database Connection
+**Note**: LOINC module uses REST API from clinicaltables.nlm.nih.gov and does not require a local database.
 
-Edit the configuration files to match your environment:
+### 5. Configure Database Connection (SNOMED-CT only)
 
-**`modules/loinc/config.php`**:
-```php
-'db' => [
-    'host' => '127.0.0.1',
-    'port' => 3306,
-    'dbname' => 'loinc_db',
-    'username' => 'root',
-    'password' => '',
-    'charset' => 'utf8'
-],
-```
+Edit the configuration file to match your environment:
 
 **`modules/snomed/config.php`**:
 ```php
@@ -105,32 +92,33 @@ Edit the configuration files to match your environment:
 
 Open your browser and navigate to:
 ```
-http://localhost/medical_catalog/public/
+http://localhost/catalog_medical/public/
 ```
 
 ## Project Structure
 
 ```
-catalog_loinc/
+catalog_medical/
 ├── config/
 │   └── modules.php          # Main module configuration
 ├── database/
 │   └── sql/
-│       ├── loinc_db.sql     # LOINC database schema
 │       └── snomed_db.sql    # SNOMED-CT database schema
 ├── modules/
 │   ├── ModuleRegistry.php   # Module registry class
 │   ├── loinc/
-│   │   ├── config.php       # LOINC configuration
+│   │   ├── config.php       # LOINC configuration (API-based)
 │   │   ├── LoincModule.php  # LOINC module class
 │   │   ├── LoincSearch.php  # LOINC search functionality
+│   │   ├── LoincApi.php     # LOINC API client
 │   │   └── Translator.php   # Indonesian-English translator
 │   └── snomed/
 │       ├── config.php       # SNOMED-CT configuration
 │       ├── SnomedModule.php # SNOMED-CT module class
 │       └── SnomedSearch.php # SNOMED-CT search functionality
 ├── public/
-│   ├── index.php            # Main web interface
+│   ├── index.php            # Landing page (hero section, features)
+│   ├── catalog.php          # Main catalog interface (search, results)
 │   └── assets/
 │       └── css/
 │           └── style.css    # Custom styles
@@ -140,15 +128,45 @@ catalog_loinc/
 ## Usage
 
 ### Home Page
-Displays summary statistics and quick search form.
+Displays quick search form with autocomplete suggestions.
 
 ### Search Page
 - Search by keyword (e.g., "darah", "glukosa", "urine")
 - Results are automatically translated from Indonesian to English
 - Sortable and paginated tables
+- Real-time autocomplete suggestions
 
 ### Statistics Page
 View database statistics for each module.
+
+## LOINC API Features
+
+The LOINC module uses the REST API from `clinicaltables.nlm.nih.gov` with the following capabilities:
+
+### Search Types
+- **Questions**: Search individual LOINC questions
+- **Forms**: Search LOINC forms and panels
+- **Forms and Sections**: Search forms with their sections
+
+### API Endpoints
+| Endpoint | Description |
+|----------|-------------|
+| `/api/loinc_items/v3/search` | Search LOINC questions |
+| `/loinc_answers` | Get answer lists for questions |
+| `/loinc_form_definitions` | Get form definitions |
+
+### Query Parameters
+- `terms`: Search string
+- `type`: Result type (question, form, panel, form_and_section)
+- `count`: Number of results (max 500)
+- `offset`: Pagination offset
+- `q`: Additional query filters (e.g., `STATUS:ACTIVE`)
+- `available`: Filter available forms
+- `ef`: Extra fields to return
+- `df`: Display fields
+- `sf`: Search fields
+- `cf`: Code field
+- `excludeCopyrighted`: Exclude copyrighted content
 
 ## Configuration Options
 
@@ -161,11 +179,17 @@ View database statistics for each module.
 ### Search Settings
 - `default_limit`: Default number of search results
 - `max_limit`: Maximum results limit
-- `enable_fulltext`: Enable full-text search
+- `enable_translation`: Enable Indonesian-English translation
 
 ## Troubleshooting
 
-### Database Connection Error
+### API Connection Error
+If you see "API connection failed" error:
+1. Ensure internet connection is available
+2. Check if `clinicaltables.nlm.nih.gov` is accessible
+3. Verify firewall/proxy settings
+
+### Database Connection Error (SNOMED-CT)
 If you see "No such file or directory" error:
 1. Ensure MySQL is running
 2. Use `127.0.0.1` instead of `localhost` in config files
@@ -176,26 +200,26 @@ If you see "Unknown character set" error:
 1. Change `charset` from `utf8mb4` to `utf8` in config files
 2. The application will use `SET NAMES utf8mb4` after connection
 
-### Missing Database
-Run the SQL import scripts in `database/sql/` directory.
-
 ## API Endpoints
 
 | Endpoint | Description |
 |----------|-------------|
-| `/?page=home&module=loinc` | LOINC home page |
-| `/?page=home&module=snomed` | SNOMED-CT home page |
-| `/?page=search&module=loinc&q=<term>` | Search LOINC |
-| `/?page=search&module=snomed&q=<term>` | Search SNOMED-CT |
-| `/?page=stats&module=loinc` | LOINC statistics |
-| `/?page=stats&module=snomed` | SNOMED-CT statistics |
+| `/index.php` | Landing page |
+| `/catalog.php?page=home&module=loinc` | LOINC home page |
+| `/catalog.php?page=home&module=snomed` | SNOMED-CT home page |
+| `/catalog.php?page=search&module=loinc&q=<term>` | Search LOINC |
+| `/catalog.php?page=search&module=snomed&q=<term>` | Search SNOMED-CT |
+| `/catalog.php?page=stats&module=loinc` | LOINC statistics |
+| `/catalog.php?page=stats&module=snomed` | SNOMED-CT statistics |
+| `/catalog.php?ajax=autocomplete&module=loinc&q=<term>` | Autocomplete suggestions |
 
 ## Technology Stack
 
 - **Backend**: PHP 7.3+
-- **Database**: MySQL 5.7+
+- **Database**: MySQL 5.7+ (SNOMED-CT only)
 - **Frontend**: HTML5, CSS3, JavaScript (Tailwind CSS, jQuery, DataTables)
 - **Translation**: Google Translate API
+- **API Client**: cURL for REST API calls
 
 ## License
 

@@ -6,6 +6,14 @@ A web-based medical catalog system with Indonesian language support for searchin
 
 - **LOINC Catalog**: Search and browse Logical Observation Identifiers Names and Codes (REST API or MySQL database)
 - **SNOMED-CT Catalog**: Search and browse Systematized Nomenclature of Medicine Clinical Terms (MySQL database)
+- **ICD-10 Catalog**: Search and browse International Classification of Diseases, 10th Revision (REST API)
+- **ICD-11 Codes Catalog**: Search and browse International Classification of Diseases, 11th Revision (REST API)
+- **ICD-9 Procedure Catalog**: Search and browse International Classification of Diseases, 9th Revision, Clinical Modification - Procedures (REST API)
+- **ICD-9 Diagnoses Catalog**: Search and browse International Classification of Diseases, 9th Revision, Clinical Modification - Diagnoses (REST API)
+- **HCPCS Catalog**: Search and browse Healthcare Common Procedure Coding System (REST API)
+- **HPO Catalog**: Search and browse Human Phenotype Ontology (REST API)
+- **Major Surgeries and Implants Catalog**: Search and browse major surgeries and implants procedures (REST API)
+- **Medical Conditions Catalog**: Search and browse medical conditions from Regenstrief Institute Medical Gopher program (REST API)
 - **Indonesian Language Support**: Filter and search using Indonesian terminology with Google Translate API
 - **Responsive Design**: Modern UI with Tailwind CSS
 - **Enhanced Search Results**: SNOMED-CT results include Clinical Focus column
@@ -111,10 +119,34 @@ catalog_medical/
 │   │   ├── LoincSearch.php  # LOINC search functionality
 │   │   ├── LoincApi.php     # LOINC API client
 │   │   └── Translator.php   # Indonesian-English translator
-│   └── snomed/
-│       ├── config.php       # SNOMED-CT configuration
-│       ├── SnomedModule.php # SNOMED-CT module class
-│       └── SnomedSearch.php # SNOMED-CT search functionality
+│   ├── snomed/
+│   │   ├── config.php       # SNOMED-CT configuration
+│   │   ├── SnomedModule.php # SNOMED-CT module class
+│   │   └── SnomedSearch.php # SNOMED-CT search functionality
+│   ├── icd10/
+│   │   ├── config.php       # ICD-10 configuration
+│   │   ├── IcdModule.php    # ICD-10 module class
+│   │   └── IcdSearch.php    # ICD-10 search functionality
+│   ├── icd9_procedure/
+│   │   ├── config.php       # ICD-9 Procedure configuration
+│   │   ├── Icd9ProcedureModule.php  # ICD-9 Procedure module class
+│   │   ├── Icd9ProcedureSearch.php  # ICD-9 Procedure search functionality
+│   │   └── Icd9ProcedureApi.php     # ICD-9 Procedure API client
+│   ├── hcpcs/
+│   │   ├── config.php       # HCPCS configuration
+│   │   ├── HcpcsModule.php  # HCPCS module class
+│   │   ├── HcpcsSearch.php  # HCPCS search functionality
+│   │   └── HcpcsApi.php     # HCPCS API client
+│   └── hpo/
+│       ├── config.php       # HPO configuration
+│       ├── HpoModule.php    # HPO module class
+│       ├── HpoSearch.php    # HPO search functionality
+│       └── HpoApi.php       # HPO API client
+│   └── major_surgeries_and_implants/
+│       ├── config.php       # Major Surgeries configuration
+│       ├── MajorSurgeriesModule.php  # Major Surgeries module class
+│       ├── MajorSurgeriesSearch.php  # Major Surgeries search functionality
+│       └── MajorSurgeriesApi.php     # Major Surgeries API client
 ├── public/
 │   ├── index.php            # Landing page (hero section, features)
 │   ├── catalog.php          # Main catalog interface (search, results)

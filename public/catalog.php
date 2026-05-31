@@ -21,16 +21,56 @@ if (!class_exists('LoincModule', false)) {
 if (!class_exists('SnomedModule', false)) {
     include __DIR__ . '/../modules/snomed/SnomedModule.php';
 }
+if (!class_exists('IcdModule', false)) {
+    include __DIR__ . '/../modules/icd10/IcdModule.php';
+}
+if (!class_exists('Icd9ProcedureModule', false)) {
+    include __DIR__ . '/../modules/icd9_procedure/Icd9ProcedureModule.php';
+}
+if (!class_exists('HcpcsModule', false)) {
+    include __DIR__ . '/../modules/hcpcs/HcpcsModule.php';
+}
+if (!class_exists('HpoModule', false)) {
+    include __DIR__ . '/../modules/hpo/HpoModule.php';
+}
+if (!class_exists('Icd9DiagnoseModule', false)) {
+    include __DIR__ . '/../modules/icd9_diagnose/Icd9DiagnoseModule.php';
+}
+if (!class_exists('Icd11Module', false)) {
+    include __DIR__ . '/../modules/icd11_codes/Icd11Module.php';
+}
+if (!class_exists('MajorSurgeriesModule', false)) {
+    include __DIR__ . '/../modules/major_surgeries_and_implants/MajorSurgeriesModule.php';
+}
+if (!class_exists('MedicalConditionsModule', false)) {
+    include __DIR__ . '/../modules/medical_conditions/MedicalConditionsModule.php';
+}
 
 // Load module configs
 $loincConfig = include __DIR__ . '/../modules/loinc/config.php';
 $snomedConfig = include __DIR__ . '/../modules/snomed/config.php';
+$icd10Config = include __DIR__ . '/../modules/icd10/config.php';
+$icd9ProcedureConfig = include __DIR__ . '/../modules/icd9_procedure/config.php';
+$icd9DiagnoseConfig = include __DIR__ . '/../modules/icd9_diagnose/config.php';
+$icd11Config = include __DIR__ . '/../modules/icd11_codes/config.php';
+$hcpcsConfig = include __DIR__ . '/../modules/hcpcs/config.php';
+$hpoConfig = include __DIR__ . '/../modules/hpo/config.php';
+$majorSurgeriesConfig = include __DIR__ . '/../modules/major_surgeries_and_implants/config.php';
+$medicalConditionsConfig = include __DIR__ . '/../modules/medical_conditions/config.php';
 
 // Build unified config
 $unifiedConfig = [
     'active_module' => $module,
     'loinc' => $loincConfig,
-    'snomed' => $snomedConfig
+    'snomed' => $snomedConfig,
+    'icd10' => $icd10Config,
+    'icd9_procedure' => $icd9ProcedureConfig,
+    'icd9_diagnose' => $icd9DiagnoseConfig,
+    'icd11_codes' => $icd11Config,
+    'hcpcs' => $hcpcsConfig,
+    'hpo' => $hpoConfig,
+    'major_surgeries_and_implants' => $majorSurgeriesConfig,
+    'medical_conditions' => $medicalConditionsConfig
 ];
 
 // Initialize unified module
@@ -146,17 +186,45 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                     </p>
                 </div>
                 
-                <!-- Module Toggle -->
+                <!-- Module Selector (Modern Dropdown) -->
                 <div class="mb-6">
-                    <div class="inline-flex rounded-md shadow-sm" role="group">
-                        <a href="catalog.php?module=loinc<?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
-                           class="px-6 py-2 text-sm font-medium rounded-l-lg <?= $module === 'loinc' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100' ?>">
-                            LOINC
-                        </a>
-                        <a href="catalog.php?module=snomed<?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
-                           class="px-6 py-2 text-sm font-medium rounded-r-lg <?= $module === 'snomed' ? 'bg-blue-500 text-white' : 'bg-white text-gray-700 hover:bg-gray-100' ?>">
-                            SNOMED CT
-                        </a>
+                    <div class="relative inline-block text-left">
+                        <div>
+                            <button type="button" id="moduleMenuButton" onclick="toggleModuleDropdown()" 
+                                    class="inline-flex justify-center w-full px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                <span id="moduleDisplayName"><?= htmlspecialchars($currentModuleInfo['name']) ?></span>
+                                <svg class="ml-2 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 9.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                        
+                        <!-- Dropdown menu -->
+                        <div id="moduleDropdown" class="origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-96 overflow-y-auto" style="display: none;">
+                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="moduleMenuButton">
+                                <?php
+                                $modules = [
+                                    'loinc' => 'LOINC',
+                                    'snomed' => 'SNOMED CT',
+                                    'icd10' => 'ICD-10',
+                                    'icd9_procedure' => 'ICD-9 Procedure',
+                                    'icd9_diagnose' => 'ICD-9 Diagnoses',
+                                    'icd11_codes' => 'ICD-11 Codes',
+                                    'hcpcs' => 'HCPCS',
+                                    'hpo' => 'HPO',
+                                    'major_surgeries_and_implants' => 'Major Surgeries',
+                                    'medical_conditions' => 'Medical Conditions'
+                                ];
+                                foreach ($modules as $modKey => $modLabel): ?>
+                                    <a href="catalog.php?module=<?= $modKey ?><?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
+                                       class="<?= $module === $modKey ? 'bg-blue-50 text-blue-700' : 'text-gray-700' ?> group flex w-full items-center justify-start px-4 py-2 text-sm hover:bg-gray-100"
+                                       role="menuitem"
+                                       onclick="updateModuleSelection('<?= $modKey ?>', '<?= $modLabel ?>')">
+                                        <span class="truncate"><?= $modLabel ?></span>
+                                    </a>
+                                <?php endforeach; ?>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -186,31 +254,41 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Kode</th>
                                     <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Deskripsi</th>
                                     <?php if ($module === 'loinc'): ?>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Kelas</th>
-                                    <?php else: ?>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Value Set</th>
-                                    <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Clinical Focus</th>
-                                    <?php endif; ?>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($results as $row): ?>
-                                    <?php 
-                                    $code = $row['loinc_num'] ?? $row['code'] ?? '-';
-                                    $description = $row['long_common_name'] ?? $row['text'] ?? $row['description'] ?? '-';
-                                    $class = $row['class'] ?? $row['CLASS'] ?? '-';
-                                    ?>
-                                    <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="copyCode('<?= htmlspecialchars($code) ?>', event)">
-                                        <td class="px-4 py-3 text-sm font-mono text-gray-800"><?= htmlspecialchars($code) ?></td>
-                                        <td class="px-4 py-3 text-sm text-gray-800 max-w-md truncate" title="<?= htmlspecialchars($description) ?>"><?= htmlspecialchars($description) ?></td>
-                                        <?php if ($module === 'loinc'): ?>
-                                        <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($class) ?></td>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Kelas</th>
+                                        <?php elseif ($module === 'snomed'): ?>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Value Set</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Clinical Focus</th>
+                                        <?php elseif ($module === 'icd10' || $module === 'icd9_procedure' || $module === 'hcpcs' || $module === 'major_surgeries_and_implants' || $module === 'medical_conditions'): ?>
+                                        <!-- ICD-10, ICD-9 Procedure, HCPCS, Major Surgeries, and Medical Conditions have only 2 columns -->
                                         <?php else: ?>
-                                        <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['value_set_name'] ?? '-') ?></td>
-                                        <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['clinical_focus'] ?? '-') ?></td>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Value Set</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Clinical Focus</th>
                                         <?php endif; ?>
                                     </tr>
-                                <?php endforeach; ?>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($results as $row): ?>
+                                        <?php 
+                                        $code = $row['loinc_num'] ?? $row['code'] ?? $row['icd_code'] ?? $row['procedure_code'] ?? '-';
+                                        $description = $row['long_common_name'] ?? $row['text'] ?? $row['name'] ?? $row['long_desc'] ?? $row['description'] ?? $row['consumer_name'] ?? $row['primary_name'] ?? '-';
+                                        $class = $row['class'] ?? $row['CLASS'] ?? '-';
+                                        ?>
+                                        <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="copyCode('<?= htmlspecialchars($code) ?>', event)">
+                                            <td class="px-4 py-3 text-sm font-mono text-gray-800"><?= htmlspecialchars($code) ?></td>
+                                            <td class="px-4 py-3 text-sm text-gray-800 max-w-md truncate" title="<?= htmlspecialchars($description) ?>"><?= htmlspecialchars($description) ?></td>
+                                            <?php if ($module === 'loinc'): ?>
+                                            <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($class) ?></td>
+                                            <?php elseif ($module === 'snomed'): ?>
+                                            <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['value_set_name'] ?? '-') ?></td>
+                                            <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['clinical_focus'] ?? '-') ?></td>
+                                            <?php elseif ($module === 'icd10'): ?>
+                                            <!-- ICD-10 has only 2 columns -->
+                                            <?php else: ?>
+                                            <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['value_set_name'] ?? '-') ?></td>
+                                            <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['clinical_focus'] ?? '-') ?></td>
+                                            <?php endif; ?>
+                                        </tr>
+                                    <?php endforeach; ?>
                             </tbody>
                         </table>
                     </div>
@@ -224,6 +302,26 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
     </div>
     
     <script>
+        // Module dropdown toggle
+        function toggleModuleDropdown() {
+            const dropdown = document.getElementById('moduleDropdown');
+            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
+        }
+        
+        function updateModuleSelection(moduleKey, moduleName) {
+            document.getElementById('moduleDisplayName').textContent = moduleName;
+            toggleModuleDropdown();
+        }
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            const dropdown = document.getElementById('moduleDropdown');
+            const button = document.getElementById('moduleMenuButton');
+            if (!button.contains(e.target) && !dropdown.contains(e.target)) {
+                dropdown.style.display = 'none';
+            }
+        });
+        
         // Copy code to clipboard
         function copyCode(code, event) {
             // Prevent event bubbling if event is provided
@@ -297,9 +395,9 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                             data.forEach(item => {
                                 const tr = document.createElement('tr');
                                 tr.className = 'border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
-                                // Handle both LOINC and SNOMED data structures
-                                const code = item.loinc_num || item.code || '-';
-                                const text = item.text || item.description || '-';
+                                // Handle LOINC, SNOMED, ICD-10, HCPCS, and Major Surgeries data structures
+                                const code = item.loinc_num || item.code || item.icd_code || item.procedure_code || '-';
+                                const text = item.text || item.description || item.name || item.long_desc || item.consumer_name || item.primary_name || '-';
                                 tr.innerHTML = '<td class="px-4 py-2 text-sm font-mono text-gray-800">' + code + '</td><td class="px-4 py-2 text-sm text-gray-500">' + text + '</td><td class="px-4 py-2 text-right"><svg class="w-4 h-4 text-blue-600 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></td>';
                                 tr.onclick = (e) => {
                                     e.stopPropagation();

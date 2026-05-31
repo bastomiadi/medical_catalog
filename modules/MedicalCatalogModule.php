@@ -11,11 +11,42 @@ require_once __DIR__ . '/loinc/LoincApi.php';
 require_once __DIR__ . '/loinc/LoincSearch.php';
 require_once __DIR__ . '/loinc/LoincDbSearch.php';
 require_once __DIR__ . '/snomed/SnomedSearch.php';
+require_once __DIR__ . '/icd10/IcdApi.php';
+require_once __DIR__ . '/icd10/IcdSearch.php';
+require_once __DIR__ . '/icd9_procedure/Icd9ProcedureApi.php';
+require_once __DIR__ . '/icd9_procedure/Icd9ProcedureSearch.php';
+require_once __DIR__ . '/icd9_procedure/Icd9ProcedureModule.php';
+require_once __DIR__ . '/icd9_diagnose/Icd9DiagnoseApi.php';
+require_once __DIR__ . '/icd9_diagnose/Icd9DiagnoseSearch.php';
+require_once __DIR__ . '/icd9_diagnose/Icd9DiagnoseModule.php';
+require_once __DIR__ . '/icd11_codes/Icd11Api.php';
+require_once __DIR__ . '/icd11_codes/Icd11Search.php';
+require_once __DIR__ . '/icd11_codes/Icd11Module.php';
+require_once __DIR__ . '/hcpcs/HcpcsApi.php';
+require_once __DIR__ . '/hcpcs/HcpcsSearch.php';
+require_once __DIR__ . '/hcpcs/HcpcsModule.php';
+require_once __DIR__ . '/hpo/HpoApi.php';
+require_once __DIR__ . '/hpo/HpoSearch.php';
+require_once __DIR__ . '/hpo/HpoModule.php';
+require_once __DIR__ . '/major_surgeries_and_implants/MajorSurgeriesApi.php';
+require_once __DIR__ . '/major_surgeries_and_implants/MajorSurgeriesSearch.php';
+require_once __DIR__ . '/major_surgeries_and_implants/MajorSurgeriesModule.php';
+require_once __DIR__ . '/medical_conditions/MedicalConditionsApi.php';
+require_once __DIR__ . '/medical_conditions/MedicalConditionsSearch.php';
+require_once __DIR__ . '/medical_conditions/MedicalConditionsModule.php';
 
 class MedicalCatalogModule {
     private $config;
     private $loincModule;
     private $snomedModule;
+    private $icd10Module;
+    private $icd9ProcedureModule;
+    private $icd9DiagnoseModule;
+    private $icd11Module;
+    private $hcpcsModule;
+    private $hpoModule;
+    private $majorSurgeriesModule;
+    private $medicalConditionsModule;
     private $activeModule;
     
     /**
@@ -34,6 +65,54 @@ class MedicalCatalogModule {
         // Initialize SNOMED module
         $snomedConfig = $config['snomed'] ?? [];
         $this->snomedModule = new SnomedModule($snomedConfig);
+        
+        // Initialize ICD-10 module
+        $icd10Config = $config['icd10'] ?? [];
+        require_once __DIR__ . '/icd10/IcdApi.php';
+        require_once __DIR__ . '/icd10/IcdSearch.php';
+        $this->icd10Module = new IcdModule($icd10Config);
+        
+        // Initialize ICD-9 Procedure module
+        $icd9ProcedureConfig = $config['icd9_procedure'] ?? [];
+        require_once __DIR__ . '/icd9_procedure/Icd9ProcedureApi.php';
+        require_once __DIR__ . '/icd9_procedure/Icd9ProcedureSearch.php';
+        $this->icd9ProcedureModule = new Icd9ProcedureModule($icd9ProcedureConfig);
+        
+        // Initialize HCPCS module
+        $hcpcsConfig = $config['hcpcs'] ?? [];
+        require_once __DIR__ . '/hcpcs/HcpcsApi.php';
+        require_once __DIR__ . '/hcpcs/HcpcsSearch.php';
+        $this->hcpcsModule = new HcpcsModule($hcpcsConfig);
+        
+        // Initialize ICD-9 Diagnoses module
+        $icd9DiagnoseConfig = $config['icd9_diagnose'] ?? [];
+        require_once __DIR__ . '/icd9_diagnose/Icd9DiagnoseApi.php';
+        require_once __DIR__ . '/icd9_diagnose/Icd9DiagnoseSearch.php';
+        $this->icd9DiagnoseModule = new Icd9DiagnoseModule($icd9DiagnoseConfig);
+        
+        // Initialize HPO module
+        $hpoConfig = $config['hpo'] ?? [];
+        require_once __DIR__ . '/hpo/HpoApi.php';
+        require_once __DIR__ . '/hpo/HpoSearch.php';
+        $this->hpoModule = new HpoModule($hpoConfig);
+        
+        // Initialize ICD-11 Codes module
+        $icd11Config = $config['icd11_codes'] ?? [];
+        require_once __DIR__ . '/icd11_codes/Icd11Api.php';
+        require_once __DIR__ . '/icd11_codes/Icd11Search.php';
+        $this->icd11Module = new Icd11Module($icd11Config);
+        
+        // Initialize Major Surgeries and Implants module
+        $majorSurgeriesConfig = $config['major_surgeries_and_implants'] ?? [];
+        require_once __DIR__ . '/major_surgeries_and_implants/MajorSurgeriesApi.php';
+        require_once __DIR__ . '/major_surgeries_and_implants/MajorSurgeriesSearch.php';
+        $this->majorSurgeriesModule = new MajorSurgeriesModule($majorSurgeriesConfig);
+        
+        // Initialize Medical Conditions module
+        $medicalConditionsConfig = $config['medical_conditions'] ?? [];
+        require_once __DIR__ . '/medical_conditions/MedicalConditionsApi.php';
+        require_once __DIR__ . '/medical_conditions/MedicalConditionsSearch.php';
+        $this->medicalConditionsModule = new MedicalConditionsModule($medicalConditionsConfig);
     }
     
     /**
@@ -65,6 +144,30 @@ class MedicalCatalogModule {
         if ($this->activeModule === 'snomed') {
             return $this->snomedModule->searchByKeyword($keyword, $status);
         }
+        if ($this->activeModule === 'icd10') {
+            return $this->icd10Module->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'icd9_procedure') {
+            return $this->icd9ProcedureModule->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'icd9_diagnose') {
+            return $this->icd9DiagnoseModule->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'icd11_codes') {
+            return $this->icd11Module->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'hcpcs') {
+            return $this->hcpcsModule->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'hpo') {
+            return $this->hpoModule->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'major_surgeries_and_implants') {
+            return $this->majorSurgeriesModule->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'medical_conditions') {
+            return $this->medicalConditionsModule->searchByKeyword($keyword, $status);
+        }
         return $this->loincModule->searchByKeyword($keyword, $status);
     }
     
@@ -77,6 +180,30 @@ class MedicalCatalogModule {
     public function getByCode($code) {
         if ($this->activeModule === 'snomed') {
             return $this->snomedModule->getByCode($code);
+        }
+        if ($this->activeModule === 'icd10') {
+            return $this->icd10Module->getByCode($code);
+        }
+        if ($this->activeModule === 'icd9_procedure') {
+            return $this->icd9ProcedureModule->getByCode($code);
+        }
+        if ($this->activeModule === 'icd9_diagnose') {
+            return $this->icd9DiagnoseModule->getByCode($code);
+        }
+        if ($this->activeModule === 'icd11_codes') {
+            return $this->icd11Module->getByCode($code);
+        }
+        if ($this->activeModule === 'hcpcs') {
+            return $this->hcpcsModule->getByCode($code);
+        }
+        if ($this->activeModule === 'hpo') {
+            return $this->hpoModule->getByCode($code);
+        }
+        if ($this->activeModule === 'major_surgeries_and_implants') {
+            return $this->majorSurgeriesModule->getByCode($code);
+        }
+        if ($this->activeModule === 'medical_conditions') {
+            return $this->medicalConditionsModule->getByCode($code);
         }
         return $this->loincModule->getByCode($code);
     }
@@ -107,6 +234,62 @@ class MedicalCatalogModule {
                 'description' => 'Systematized Nomenclature of Medicine Clinical Terms',
                 'language_support' => ['en', 'id'],
                 'data_source' => 'MySQL Database'
+            ],
+            'icd10' => [
+                'name' => 'ICD-10',
+                'version' => '1.0.0',
+                'description' => 'International Classification of Diseases, 10th Revision',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/'
+            ],
+            'icd9_procedure' => [
+                'name' => 'ICD-9 Procedure',
+                'version' => '1.0.0',
+                'description' => 'International Classification of Diseases, 9th Revision, Clinical Modification - Procedures',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/icd9cm_sg/v3/'
+            ],
+            'hcpcs' => [
+                'name' => 'HCPCS',
+                'version' => '1.0.0',
+                'description' => 'Healthcare Common Procedure Coding System',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/hcpcs/v3/'
+            ],
+            'hpo' => [
+                'name' => 'HPO',
+                'version' => '1.0.0',
+                'description' => 'Human Phenotype Ontology',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/hpo/v3/'
+            ],
+            'icd9_diagnose' => [
+                'name' => 'ICD-9-CM Diagnoses',
+                'version' => '1.0.0',
+                'description' => 'International Classification of Diseases, 9th Revision, Clinical Modification - Diagnoses',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/icd9cm_dx/v3/'
+            ],
+            'icd11_codes' => [
+                'name' => 'ICD-11 Codes',
+                'version' => '1.0.0',
+                'description' => 'International Classification of Diseases, 11th Revision',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/icd11_codes/v3/'
+            ],
+            'major_surgeries_and_implants' => [
+                'name' => 'Major Surgeries and Implants',
+                'version' => '1.0.0',
+                'description' => 'Major Surgeries and Implants procedures',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/procedures/v3/'
+            ],
+            'medical_conditions' => [
+                'name' => 'Medical Conditions',
+                'version' => '1.0.0',
+                'description' => 'Medical Conditions from Regenstrief Institute Medical Gopher program',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'https://clinicaltables.nlm.nih.gov/api/conditions/v3/'
             ]
         ];
     }

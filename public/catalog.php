@@ -196,47 +196,39 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                     </p>
                 </div>
                 
-                <!-- Module Selector (Modern Dropdown) -->
+                <!-- Module Selector (Compact Modern Style) -->
                 <div class="mb-6">
-                    <div class="relative inline-block text-left">
-                        <div>
-                            <button type="button" id="moduleMenuButton" onclick="toggleModuleDropdown()" 
-                                    class="inline-flex justify-center w-full px-6 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                                <span id="moduleDisplayName"><?= htmlspecialchars($currentModuleInfo['name']) ?></span>
-                                <svg class="ml-2 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 9.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </button>
-                        </div>
-                        
-                        <!-- Dropdown menu -->
-                        <div id="moduleDropdown" class="origin-top-right absolute right-0 mt-2 w-64 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 focus:outline-none z-50 max-h-96 overflow-y-auto" style="display: none;">
-                            <div class="py-1" role="menu" aria-orientation="vertical" aria-labelledby="moduleMenuButton">
-                                <?php
-                                $modules = [
-                                    'loinc' => 'LOINC',
-                                    'snomed' => 'SNOMED CT',
-                                    'icd10' => 'ICD-10',
-                                    'icd9_procedure' => 'ICD-9 Procedure',
-                                    'icd9_diagnose' => 'ICD-9 Diagnoses',
-                                    'icd11_codes' => 'ICD-11 Codes',
-                                    'hcpcs' => 'HCPCS',
-                                    'hpo' => 'HPO',
-                                    'major_surgeries_and_implants' => 'Major Surgeries',
-                                    'medical_conditions' => 'Medical Conditions',
-                                    'ucum' => 'UCUM',
-                                    'prescribable_drug_ingredients_RxTerms' => 'RxTerms'
-                                ];
-                                foreach ($modules as $modKey => $modLabel): ?>
-                                    <a href="catalog.php?module=<?= $modKey ?><?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
-                                       class="<?= $module === $modKey ? 'bg-blue-50 text-blue-700' : 'text-gray-700' ?> group flex w-full items-center justify-start px-4 py-2 text-sm hover:bg-gray-100"
-                                       role="menuitem"
-                                       onclick="updateModuleSelection('<?= $modKey ?>', '<?= $modLabel ?>')">
-                                        <span class="truncate"><?= $modLabel ?></span>
-                                    </a>
-                                <?php endforeach; ?>
-                            </div>
-                        </div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-sm font-medium text-gray-600">Pilih Modul:</span>
+                    </div>
+                    <div class="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-1">
+                        <?php
+                        $modules = [
+                            'loinc' => 'LOINC',
+                            'snomed' => 'SNOMED CT',
+                            'icd10' => 'ICD-10',
+                            'icd9_procedure' => 'ICD-9 Procedure',
+                            'icd9_diagnose' => 'ICD-9 Diagnoses',
+                            'icd11_codes' => 'ICD-11 Codes',
+                            'hcpcs' => 'HCPCS',
+                            'hpo' => 'HPO',
+                            'major_surgeries_and_implants' => 'Major Surgeries',
+                            'medical_conditions' => 'Medical Conditions',
+                            'ucum' => 'UCUM',
+                            'prescribable_drug_ingredients_RxTerms' => 'RxTerms'
+                        ];
+                        foreach ($modules as $modKey => $modLabel): 
+                            $isActive = $module === $modKey;
+                        ?>
+                            <a href="catalog.php?module=<?= $modKey ?><?= $searchKeyword ? '&q=' . urlencode($searchKeyword) : '' ?>" 
+                               class="<?= $isActive 
+                                   ? 'bg-blue-500 text-white shadow-md transform scale-105' 
+                                   : 'bg-white text-gray-700 border border-gray-200 hover:bg-gray-50' ?> 
+                                   px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 
+                                   hover:shadow-sm whitespace-nowrap">
+                                   <?= $modLabel ?>
+                            </a>
+                        <?php endforeach; ?>
                     </div>
                 </div>
                 
@@ -314,26 +306,6 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
     </div>
     
     <script>
-        // Module dropdown toggle
-        function toggleModuleDropdown() {
-            const dropdown = document.getElementById('moduleDropdown');
-            dropdown.style.display = dropdown.style.display === 'none' ? 'block' : 'none';
-        }
-        
-        function updateModuleSelection(moduleKey, moduleName) {
-            document.getElementById('moduleDisplayName').textContent = moduleName;
-            toggleModuleDropdown();
-        }
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', function(e) {
-            const dropdown = document.getElementById('moduleDropdown');
-            const button = document.getElementById('moduleMenuButton');
-            if (!button.contains(e.target) && !dropdown.contains(e.target)) {
-                dropdown.style.display = 'none';
-            }
-        });
-        
         // Copy code to clipboard
         function copyCode(code, event) {
             // Prevent event bubbling if event is provided

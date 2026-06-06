@@ -51,6 +51,9 @@ if (!class_exists('UcumModule', false)) {
 if (!class_exists('RxTermsModule', false)) {
     include __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/RxTermsModule.php';
 }
+if (!class_exists('KfaModule', false)) {
+    include __DIR__ . '/../modules/kfa/KfaModule.php';
+}
 
 // Load module configs
 $loincConfig = include __DIR__ . '/../modules/loinc/config.php';
@@ -65,6 +68,7 @@ $majorSurgeriesConfig = include __DIR__ . '/../modules/major_surgeries_and_impla
 $medicalConditionsConfig = include __DIR__ . '/../modules/medical_conditions/config.php';
 $ucumConfig = include __DIR__ . '/../modules/ucum/config.php';
 $rxTermsConfig = include __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/config.php';
+$kfaConfig = include __DIR__ . '/../modules/kfa/config.php';
 
 // Build unified config
 $unifiedConfig = [
@@ -80,7 +84,8 @@ $unifiedConfig = [
     'major_surgeries_and_implants' => $majorSurgeriesConfig,
     'medical_conditions' => $medicalConditionsConfig,
     'ucum' => $ucumConfig,
-    'prescribable_drug_ingredients_RxTerms' => $rxTermsConfig
+    'prescribable_drug_ingredients_RxTerms' => $rxTermsConfig,
+    'kfa' => $kfaConfig
 ];
 
 // Initialize unified module
@@ -204,19 +209,20 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                     <div class="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-1">
                         <?php
                         $modules = [
-                            'loinc' => 'LOINC',
-                            'snomed' => 'SNOMED CT',
-                            'icd10' => 'ICD-10',
-                            'icd9_procedure' => 'ICD-9 Procedure',
-                            'icd9_diagnose' => 'ICD-9 Diagnoses',
-                            'icd11_codes' => 'ICD-11 Codes',
-                            'hcpcs' => 'HCPCS',
-                            'hpo' => 'HPO',
-                            'major_surgeries_and_implants' => 'Major Surgeries',
-                            'medical_conditions' => 'Medical Conditions',
-                            'ucum' => 'UCUM',
-                            'prescribable_drug_ingredients_RxTerms' => 'Drug Ingredients from RxTerms'
-                        ];
+                        'loinc' => 'LOINC',
+                        'snomed' => 'SNOMED CT',
+                        'kfa' => 'KFA',
+                        'icd10' => 'ICD-10',
+                        'icd9_procedure' => 'ICD-9 Procedure',
+                        'icd9_diagnose' => 'ICD-9 Diagnoses',
+                        'icd11_codes' => 'ICD-11 Codes',
+                        'hcpcs' => 'HCPCS',
+                        'hpo' => 'HPO',
+                        'major_surgeries_and_implants' => 'Major Surgeries',
+                        'medical_conditions' => 'Medical Conditions',
+                        'ucum' => 'UCUM',
+                        'prescribable_drug_ingredients_RxTerms' => 'Drug Ingredients from RxTerms'
+                    ];
                         foreach ($modules as $modKey => $modLabel): 
                             $isActive = $module === $modKey;
                         ?>
@@ -262,6 +268,9 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                                         <?php elseif ($module === 'snomed'): ?>
                                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Value Set</th>
                                         <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Clinical Focus</th>
+                                        <?php elseif ($module === 'kfa'): ?>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Produsen</th>
+                                        <th class="px-4 py-3 text-left text-sm font-semibold text-gray-600">Harga</th>
                                         <?php elseif ($module === 'icd10' || $module === 'icd9_procedure' || $module === 'hcpcs' || $module === 'major_surgeries_and_implants' || $module === 'medical_conditions' || $module === 'ucum' || $module === 'prescribable_drug_ingredients_RxTerms'): ?>
                                         <!-- ICD-10, ICD-9 Procedure, HCPCS, Major Surgeries, Medical Conditions, UCUM, and RxTerms have only 2 columns -->
                                         <?php else: ?>
@@ -273,9 +282,12 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                                 <tbody>
                                     <?php foreach ($results as $row): ?>
                                         <?php 
-                                        $code = $row['loinc_num'] ?? $row['code'] ?? $row['icd_code'] ?? $row['procedure_code'] ?? $row['cs_code'] ?? '-';
-                                        $description = $row['long_common_name'] ?? $row['name'] ?? $row['text'] ?? $row['long_desc'] ?? $row['description'] ?? $row['consumer_name'] ?? $row['primary_name'] ?? '-';
+                                        $code = $row['loinc_num'] ?? $row['code'] ?? $row['icd_code'] ?? $row['procedure_code'] ?? $row['cs_code'] ?? $row['kfa_code'] ?? '-';
+                                        $description = $row['long_common_name'] ?? $row['name'] ?? $row['text'] ?? $row['long_desc'] ?? $row['description'] ?? $row['consumer_name'] ?? $row['primary_name'] ?? $row['nama_dagang'] ?? '-';
                                         $class = $row['class'] ?? $row['CLASS'] ?? '-';
+                                        $manufacturer = $row['manufacturer'] ?? '-';
+                                        $fixPrice = $row['fix_price'] ?? null;
+                                        $hetPrice = $row['het_price'] ?? null;
                                         ?>
                                         <tr class="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onclick="copyCode('<?= htmlspecialchars($code) ?>', event)">
                                             <td class="px-4 py-3 text-sm font-mono text-gray-800"><?= htmlspecialchars($code) ?></td>
@@ -285,6 +297,9 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                                             <?php elseif ($module === 'snomed'): ?>
                                             <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['value_set_name'] ?? '-') ?></td>
                                             <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($row['clinical_focus'] ?? '-') ?></td>
+                                            <?php elseif ($module === 'kfa'): ?>
+                                            <td class="px-4 py-3 text-sm text-gray-600"><?= htmlspecialchars($manufacturer) ?></td>
+                                            <td class="px-4 py-3 text-sm text-gray-600"><?= $fixPrice ? 'Rp ' . number_format($fixPrice) : ($hetPrice ? 'Rp ' . number_format($hetPrice) : '-') ?></td>
                                             <?php elseif ($module === 'icd10'): ?>
                                             <!-- ICD-10 has only 2 columns -->
                                             <?php else: ?>
@@ -379,9 +394,9 @@ $currentModuleInfo = $moduleInfo[$module] ?? $moduleInfo['loinc'];
                             data.forEach(item => {
                                 const tr = document.createElement('tr');
                                 tr.className = 'border-b border-gray-100 hover:bg-gray-50 cursor-pointer';
-                                // Handle LOINC, SNOMED, ICD-10, HCPCS, Major Surgeries, and UCUM data structures
-                                const code = item.loinc_num || item.code || item.icd_code || item.procedure_code || item.cs_code || '-';
-                                const text = item.name || item.text || item.description || item.long_desc || item.consumer_name || item.primary_name || '-';
+                                // Handle LOINC, SNOMED, ICD-10, HCPCS, Major Surgeries, UCUM, and KFA data structures
+                                const code = item.loinc_num || item.code || item.icd_code || item.procedure_code || item.cs_code || item.kfa_code || '-';
+                                const text = item.name || item.text || item.description || item.long_desc || item.consumer_name || item.primary_name || item.nama_dagang || '-';
                                 tr.innerHTML = '<td class="px-4 py-2 text-sm font-mono text-gray-800">' + code + '</td><td class="px-4 py-2 text-sm text-gray-500">' + text + '</td><td class="px-4 py-2 text-right"><svg class="w-4 h-4 text-blue-600 inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg></td>';
                                 tr.onclick = (e) => {
                                     e.stopPropagation();

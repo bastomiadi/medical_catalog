@@ -6,6 +6,7 @@ A comprehensive web-based medical catalog system with Indonesian language suppor
 
 - **LOINC Catalog**: Search and browse Logical Observation Identifiers Names and Codes (REST API or MySQL database)
 - **SNOMED-CT Catalog**: Search and browse Systematized Nomenclature of Medicine Clinical Terms (MySQL database)
+- **KFA Catalog**: Search and browse Farmaceutical Product Catalog - Master KFA (MySQL database)
 - **ICD-10 Catalog**: Search and browse International Classification of Diseases, 10th Revision (REST API)
 - **ICD-11 Codes Catalog**: Search and browse International Classification of Diseases, 11th Revision (REST API)
 - **ICD-9 Procedure Catalog**: Search and browse International Classification of Diseases, 9th Revision, Clinical Modification - Procedures (REST API)
@@ -38,6 +39,7 @@ A comprehensive web-based medical catalog system with Indonesian language suppor
 |--------|--------|-------------|
 | LOINC | REST API or MySQL Database | Configurable via `use_database` setting in config |
 | SNOMED-CT | [MySQL Database](database/sql/snomed_db.sql) | SNOMED-CT database schema with local MySQL storage |
+| KFA | [MySQL Database](database/sql/master_kfa.sql) | Farmaceutical Product Catalog (Master KFA) with 24,333 products |
 | ICD-10 | Clinical Tables API | https://clinicaltables.nlm.nih.gov/api/icd10cm/v3/ |
 | ICD-11 | Clinical Tables API | https://clinicaltables.nlm.nih.gov/api/icd11_codes/v3/ |
 | ICD-9 Procedure | Clinical Tables API | https://clinicaltables.nlm.nih.gov/api/icd9cm_sg/v3/ |
@@ -52,7 +54,7 @@ A comprehensive web-based medical catalog system with Indonesian language suppor
 ## Requirements
 
 - PHP 7.3+ (XAMPP recommended)
-- MySQL 5.7+ (for SNOMED-CT only)
+- MySQL 5.7+ (for SNOMED-CT and KFA modules)
 - Apache HTTP Server
 - Internet connection (for API access)
 
@@ -69,34 +71,51 @@ cd /Applications/XAMPP/xamppfiles/htdocs/
 
 Start Apache and MySQL services from XAMPP Control Panel.
 
-### 3. Create Database (SNOMED-CT only)
+### 3. Create Databases (SNOMED-CT and KFA)
 
 ```sql
 CREATE DATABASE IF NOT EXISTS snomed_db;
+CREATE DATABASE IF NOT EXISTS master_kfa;
 ```
 
-### 4. Import SNOMED-CT Database Schema
+### 4. Import Database Schemas
 
-The database SQL file is located in the `database/sql/` directory:
+The database SQL files are located in the `database/sql/` directory:
 - `database/sql/snomed_db.sql` - SNOMED-CT database schema
+- `database/sql/master_kfa.sql` - KFA (Master KFA) database schema with 24,333 products
 
 ```bash
 # Import SNOMED-CT schema
 mysql -u root -p snomed_db < database/sql/snomed_db.sql
+
+# Import KFA schema
+mysql -u root -p master_kfa < database/sql/master_kfa.sql
 ```
 
 **Note**: Most modules use REST API from clinicaltables.nlm.nih.gov and do not require a local database.
 
-### 5. Configure Database Connection (SNOMED-CT only)
+### 5. Configure Database Connections
 
-Edit the configuration file to match your environment:
+Edit the configuration files to match your environment:
 
-**`modules/snomed/config.php`**:
+**`modules/snomed/config.php`** (for SNOMED-CT):
 ```php
 'db' => [
     'host' => '127.0.0.1',
     'port' => 3306,
     'dbname' => 'snomed_db',
+    'username' => 'root',
+    'password' => '',
+    'charset' => 'utf8'
+],
+```
+
+**`modules/kfa/config.php`** (for KFA):
+```php
+'db' => [
+    'host' => '127.0.0.1',
+    'port' => 3306,
+    'dbname' => 'master_kfa',
     'username' => 'root',
     'password' => '',
     'charset' => 'utf8'
@@ -136,6 +155,10 @@ catalog_medical/
 │   │   ├── config.php           # SNOMED-CT configuration
 │   │   ├── SnomedModule.php     # SNOMED-CT module class
 │   │   └── SnomedSearch.php     # SNOMED-CT search functionality
+│   ├── kfa/
+│   │   ├── config.php           # KFA configuration
+│   │   ├── KfaModule.php        # KFA module class
+│   │   └── KfaSearch.php        # KFA search functionality
 │   ├── icd10/
 │   │   ├── config.php           # ICD-10 configuration
 │   │   ├── IcdModule.php        # ICD-10 module class
@@ -259,10 +282,13 @@ The LOINC module uses the REST API from `clinicaltables.nlm.nih.gov` with the fo
 | `/index.php` | Landing page |
 | `/catalog.php?page=home&module=loinc` | LOINC home page |
 | `/catalog.php?page=home&module=snomed` | SNOMED-CT home page |
+| `/catalog.php?page=home&module=kfa` | KFA home page |
 | `/catalog.php?page=search&module=loinc&q=<term>` | Search LOINC |
 | `/catalog.php?page=search&module=snomed&q=<term>` | Search SNOMED-CT |
+| `/catalog.php?page=search&module=kfa&q=<term>` | Search KFA |
 | `/catalog.php?page=stats&module=loinc` | LOINC statistics |
 | `/catalog.php?page=stats&module=snomed` | SNOMED-CT statistics |
+| `/catalog.php?page=stats&module=kfa` | KFA statistics |
 | `/catalog.php?ajax=autocomplete&module=loinc&q=<term>` | Autocomplete suggestions |
 
 ## Troubleshooting
@@ -287,7 +313,7 @@ If you see "Unknown character set" error:
 ## Technology Stack
 
 - **Backend**: PHP 7.3+
-- **Database**: MySQL 5.7+ (SNOMED-CT only)
+- **Database**: MySQL 5.7+ (SNOMED-CT and KFA modules)
 - **Frontend**: HTML5, CSS3, JavaScript (Tailwind CSS, jQuery)
 - **Translation**: Google Translate API
 - **API Client**: cURL for REST API calls

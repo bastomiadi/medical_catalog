@@ -45,19 +45,20 @@
                     <div class="flex flex-wrap gap-2 max-h-64 overflow-y-auto pr-1">
                         <?php
                         $modules = [
-                            'loinc' => 'LOINC',
-                            'snomed' => 'SNOMED CT',
-                            'icd10' => 'ICD-10',
-                            'icd9_procedure' => 'ICD-9 Procedure',
-                            'icd9_diagnose' => 'ICD-9 Diagnoses',
-                            'icd11_codes' => 'ICD-11 Codes',
-                            'hcpcs' => 'HCPCS',
-                            'hpo' => 'HPO',
-                            'major_surgeries_and_implants' => 'Major Surgeries',
-                            'medical_conditions' => 'Medical Conditions',
-                            'ucum' => 'UCUM',
-                            'prescribable_drug_ingredients_RxTerms' => 'Drug Ingredients from RxTerms'
-                        ];
+                        'loinc' => 'LOINC',
+                        'snomed' => 'SNOMED CT',
+                        'kfa' => 'KFA',
+                        'icd10' => 'ICD-10',
+                        'icd9_procedure' => 'ICD-9 Procedure',
+                        'icd9_diagnose' => 'ICD-9 Diagnoses',
+                        'icd11_codes' => 'ICD-11 Codes',
+                        'hcpcs' => 'HCPCS',
+                        'hpo' => 'HPO',
+                        'major_surgeries_and_implants' => 'Major Surgeries',
+                        'medical_conditions' => 'Medical Conditions',
+                        'ucum' => 'UCUM',
+                        'prescribable_drug_ingredients_RxTerms' => 'Drug Ingredients from RxTerms'
+                    ];
                         foreach ($modules as $modKey => $modLabel): 
                         ?>
                             <a href="catalog.php?module=<?= $modKey ?>" 

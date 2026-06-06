@@ -40,11 +40,14 @@ require_once __DIR__ . '/ucum/UcumModule.php';
 require_once __DIR__ . '/prescribable_drug_ingredients_RxTerms/RxTermsApi.php';
 require_once __DIR__ . '/prescribable_drug_ingredients_RxTerms/RxTermsSearch.php';
 require_once __DIR__ . '/prescribable_drug_ingredients_RxTerms/RxTermsModule.php';
+require_once __DIR__ . '/kfa/KfaSearch.php';
+require_once __DIR__ . '/kfa/KfaModule.php';
 
 class MedicalCatalogModule {
     private $config;
     private $loincModule;
     private $snomedModule;
+    private $kfaModule;
     private $icd10Module;
     private $icd9ProcedureModule;
     private $icd9DiagnoseModule;
@@ -129,6 +132,10 @@ class MedicalCatalogModule {
         // Initialize RxTerms module
         $rxTermsConfig = $config['prescribable_drug_ingredients_RxTerms'] ?? [];
         $this->rxTermsModule = new RxTermsModule($rxTermsConfig);
+        
+        // Initialize KFA module
+        $kfaConfig = $config['kfa'] ?? [];
+        $this->kfaModule = new KfaModule($kfaConfig);
     }
     
     /**
@@ -159,6 +166,9 @@ class MedicalCatalogModule {
     public function searchByKeyword($keyword, $status = null) {
         if ($this->activeModule === 'snomed') {
             return $this->snomedModule->searchByKeyword($keyword, $status);
+        }
+        if ($this->activeModule === 'kfa') {
+            return $this->kfaModule->searchByKeyword($keyword, $status);
         }
         if ($this->activeModule === 'icd10') {
             return $this->icd10Module->searchByKeyword($keyword, $status);
@@ -203,6 +213,9 @@ class MedicalCatalogModule {
         if ($this->activeModule === 'snomed') {
             return $this->snomedModule->getByCode($code);
         }
+        if ($this->activeModule === 'kfa') {
+            return $this->kfaModule->getByCode($code);
+        }
         if ($this->activeModule === 'icd10') {
             return $this->icd10Module->getByCode($code);
         }
@@ -245,6 +258,9 @@ class MedicalCatalogModule {
         if ($this->activeModule === 'snomed') {
             return $this->snomedModule->getStatistics();
         }
+        if ($this->activeModule === 'kfa') {
+            return $this->kfaModule->getStatistics();
+        }
         return $this->loincModule->getStatistics();
     }
     
@@ -262,6 +278,13 @@ class MedicalCatalogModule {
                 'description' => 'Systematized Nomenclature of Medicine Clinical Terms',
                 'language_support' => ['en', 'id'],
                 'data_source' => 'MySQL Database'
+            ],
+            'kfa' => [
+                'name' => 'KFA',
+                'version' => '1.0.0',
+                'description' => 'Farmaceutical Product Catalog (Master KFA)',
+                'language_support' => ['en', 'id'],
+                'data_source' => 'MySQL Database (master_kfa)'
             ],
             'icd10' => [
                 'name' => 'ICD-10',

@@ -69,6 +69,11 @@ return [
         'path' => __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/RxTermsModule.php',
         'config_path' => __DIR__ . '/../modules/prescribable_drug_ingredients_RxTerms/config.php'
     ],
+    'kfa' => [
+        'class' => 'KfaModule',
+        'path' => __DIR__ . '/../modules/kfa/KfaModule.php',
+        'config_path' => __DIR__ . '/../modules/kfa/config.php'
+    ],
     
     // Application settings
     'app' => [
